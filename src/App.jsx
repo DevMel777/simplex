@@ -12,7 +12,10 @@ export default function SimplexSimulator() {
   const [numVariaveis, setNumVariaveis] = useState(2);
   const [numRestricoes, setNumRestricoes] = useState(2);
   const [funcaoObjetiva, setFuncaoObjetiva] = useState([c => '']);
-  const [restricoes, setRestricoes] = useState([]);
+  const [restricoes, setRestricoes] = useState([
+  { coeficientes: [0, 0], sinal: '<=', b: 0 },
+  { coeficientes: [0, 0], sinal: '<=', b: 0 }
+]);
   
   // Estados da Execução
   const [tableau, setTableau] = useState(null);
@@ -24,14 +27,15 @@ export default function SimplexSimulator() {
 
   // Inicializa os campos de input baseados no número de variáveis/restrições
   const configurarProblema = () => {
-    setFuncaoObjetiva(Array(Number(numVariaveis)).fill(0));
-    setRestricoes(Array(Number(numRestricoes)).fill(0).map(() => ({
-      coeficientes: Array(Number(numVariaveis)).fill(0),
-      b: 0
-    })));
-    setTableau(null);
-    setFase('ENTRADA');
-  };
+  setFuncaoObjetiva(Array(Number(numVariaveis)).fill(0));
+  setRestricoes(Array(Number(numRestricoes)).fill(0).map(() => ({
+    coeficientes: Array(Number(numVariaveis)).fill(0),
+    sinal: '<=', // <-- Nova propriedade
+    b: 0
+  })));
+  setTableau(null);
+  setFase('ENTRADA');
+};
 
   // Inicia o algoritmo gerando a primeira matriz (Tableau)
   const iniciarCalculo = () => {
@@ -156,7 +160,16 @@ export default function SimplexSimulator() {
                       <span className="font-medium">X{j+1} {j < rest.coeficientes.length - 1 ? '+' : ''}</span>
                     </div>
                   ))}
-                  <span className="font-bold text-gray-600">&le;</span>
+                  <select 
+                    value={rest.sinal} 
+                    onChange={e => {
+                      const r = [...restricoes]; r[i].sinal = e.target.value; setRestricoes(r);
+                    }}
+                    className="p-1.5 border rounded bg-white font-bold text-gray-700 cursor-pointer"
+                  >
+                    <option value="<=">&le;</option>
+                    <option value=">=">&ge;</option>
+                  </select>
                   <input type="number" placeholder="0" onChange={e => {
                     const r = [...restricoes]; r[i].b = Number(e.target.value); setRestricoes(r);
                   }} className="w-20 p-1.5 border rounded text-center font-semibold" />
