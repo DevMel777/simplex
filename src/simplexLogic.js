@@ -85,10 +85,11 @@ export function passo3_EncontrarLinhaPivo(razoes) {
   return linhaPivoIdx;
 }
 
+
 /**
- * PASSO 4: Executa as operações aritméticas elementares sobre as linhas (Pivotamento)
+ * PASSO 4: Executa o pivotamento e atualiza os rótulos da base
  */
-export function passo4_Pivotar(matriz, linhaPivo, colunaPivo) {
+export function passo4_Pivotar(matriz, linhaPivo, colunaPivo, labelsAtuais, varLabels) {
   const numColunas = matriz[0].length;
   const pivoValor = matriz[linhaPivo][colunaPivo];
 
@@ -107,5 +108,13 @@ export function passo4_Pivotar(matriz, linhaPivo, colunaPivo) {
     }
   }
 
-  return matriz;
+  // 3. TROCA DINÂMICA DE LABELS: A variável da coluna entra na Base
+  // O índice da linha na base é (linhaPivo - 1) porque a linha 0 é o Z
+  let novasRestricoesLabels = [...labelsAtuais.restrictions];
+  novasRestricoesLabels[linhaPivo - 1] = varLabels[colunaPivo];
+
+  return { 
+    novaMatriz: matriz, 
+    novasRestricoesLabels 
+  };
 }

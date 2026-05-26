@@ -79,17 +79,26 @@ export default function SimplexSimulator() {
         break;
 
       case 'PASSO_4':
-        // 6. Nova matriz elementar (Pivotamento)
-        const novaMatriz = passo4_Pivotar(t, linhaPivo, colunaPivo);
+        // 6. Nova matriz elementar (Pivotamento) com troca de variáveis na Base
+        const { novaMatriz, novasRestricoesLabels } = passo4_Pivotar(
+          t, 
+          linhaPivo, 
+          colunaPivo, 
+          labels, 
+          labels.vars
+        );
+
         setTableau(novaMatriz);
+        setLabels({
+          ...labels,
+          restrictions: novasRestricoesLabels // Atualiza os nomes na coluna Base
+        });
+
         // Reseta destaques e volta pro Passo 1 para testar otimalidade
         setColunaPivo(-1);
         setLinhaPivo(-1);
         setRazoes([]);
         setFase('PASSO_1');
-        break;
-
-      default:
         break;
     }
   };
@@ -97,7 +106,7 @@ export default function SimplexSimulator() {
   return (
     <div className="min-h-screen bg-gray-50 p-6 text-gray-800 font-sans">
       <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-xl p-6">
-        <h1 className="text-3xl font-extrabold text-indigo-600 mb-6 text-center">Simulador Simplex Passo a Passo</h1>
+        <h1 className="text-3xl font-extrabold text-blue-800 mb-6 text-center">Simulador Simplex Passo a Passo</h1>
 
         {/* CONFIGURAÇÃO DO TAMANHO DA MATRIZ */}
         {fase === 'ENTRADA' && !tableau && (
@@ -172,7 +181,7 @@ export default function SimplexSimulator() {
                 {fase === 'PASSO_2' && "2 & 3. Coluna pivô identificada! Calculando as razões (b / Coeficiente da Coluna) para definir quem sai."}
                 {fase === 'PASSO_3' && "4 & 5. Linha e Elemento Pivô determinados (Menor razão positiva estrita)."}
                 {fase === 'PASSO_4' && "6. Realizando operações de linha (pivotamento) para zerar o restante da coluna."}
-                {fase === 'OTIMO' && "🎉 Solução Ótima Encontrada! Não há valores negativos na linha Z."}
+                {fase === 'OTIMO' && "Solução Ótima Encontrada! Não há valores negativos na linha Z."}
               </p>
             </div>
 
