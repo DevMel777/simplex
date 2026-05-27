@@ -1,34 +1,66 @@
 /**
  * Inicializa a estrutura da matriz (Tableau) com variáveis de folga.
  */
-export function inicializarTableau(funcaoObjetiva, restricoes) {
+const M = 1000; // Penalidade do método do M-Grande
+
+export function inicializarTableauMGrande(funcaoObjetiva, restricoes) {
   const numVars = funcaoObjetiva.length;
-  const numRestricoes = restricoes.length;
   
-  // Rótulos (Labels) para a tabela
+  // Identifica quantas folgas e artificiais serão necessárias
+  let qtdFolgas = restricoes.length; 
+  let qtdArtificiais = restricoes.filter(r => r.sinal === '>=').length;
+  const totalColunasLivres = numVars + qtdFolgas + qtdArtificiais;
+
+  // Gerar Rótulos das Colunas
   let varLabels = [];
   for(let i = 1; i <= numVars; i++) varLabels.push(`X${i}`);
-  for(let i = 1; i <= numRestricoes; i++) varLabels.push(`f${i}`);
+  for(let i = 1; i <= qtdFolgas; i++) varLabels.push(`f${i}`);
+  for(let i = 1; i <= qtdArtificiais; i++) varLabels.push(`A${i}`);
 
   let restrictionLabels = [];
-  for(let i = 1; i <= numRestricoes; i++) restrictionLabels.push(`f${i}`);
-
-  // Montagem das Linhas
   let matriz = [];
 
-  // Linha Z: [ -C1, -C2, ... , 0 (folgas), 0 (b) ]
-  let linhaZ = funcaoObjetiva.map(val => -val);
-  let folgasZ = Array(numRestricoes).fill(0);
-  matriz.push([...linhaZ, ...folgasZ, 0]);
+  // 1. Montagem da Linha Z Base
+  let linhaZ = Array(totalColunasLivres + 1).fill(0);
+  for(let j = 0; j < numVars; j++) {
+    linhaZ[j] = -funcaoObjetiva[j];
+  }
 
-  // Linhas das Restrições
+  // 2. Montagem das restrições e mapeamento das folgas/artificiais
+  let indexFolga = 0;
+  let indexArtificial = 0;
+
   restricoes.forEach((rest, idx) => {
-    let linha = [...rest.coeficientes];
-    let folgas = Array(numRestricoes).fill(0);
-    folgas[idx] = 1; // Insere a variável de folga na diagonal
-    matriz.push([...linha, ...folgas, rest.b]);
+    let linha = Array(totalColunasLivres + 1).fill(0);
+    for(let j = 0; j < numVars; j++) linha[j] = rest.coeficientes[j];
+    linha[totalColunasLivres] = rest.b;
+
+    if (rest.sinal === '<=') {
+      linha[numVars + indexFolga] = 1;
+      restrictionLabels.push(`f${indexFolga + 1}`);
+      indexFolga++;
+    } else {
+      linha[numVars + indexFolga] = -1; // excesso
+      linha[numVars + qtdFolgas + indexArtificial] = 1; // artificial
+      restrictionLabels.push(`A${indexArtificial + 1}`);
+      
+      linhaZ[numVars + qtdFolgas + indexArtificial] = M; // Penalidade M
+      indexFolga++;
+      indexArtificial++;
+    }
+    matriz.push(linha);
   });
 
+  // Ajuste matemático obrigatório para zerar os coeficientes de 'A' na linha Z
+  restricoes.forEach((rest, idx) => {
+    if (rest.sinal === '>=') {
+      for (let j = 0; j <= totalColunasLivres; j++) {
+        linhaZ[j] -= M * matriz[idx][j];
+      }
+    }
+  });
+
+  matriz.unshift(linhaZ);
   return { matriz, varLabels, restrictionLabels };
 }
 

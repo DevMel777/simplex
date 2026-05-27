@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  inicializarTableau, 
+  inicializarTableauMGrande, 
   passo1_EncontrarColunaPivo, 
   passo2_CalcularRazoes, 
   passo3_EncontrarLinhaPivo, 
@@ -39,7 +39,7 @@ export default function SimplexSimulator() {
 
   // Inicia o algoritmo gerando a primeira matriz (Tableau)
   const iniciarCalculo = () => {
-    const { matriz, varLabels, restrictionLabels } = inicializarTableau(funcaoObjetiva, restricoes);
+    const { matriz, varLabels, restrictionLabels } = inicializarTableauMGrande(funcaoObjetiva, restricoes);
     setTableau(matriz);
     setLabels({ vars: varLabels, restrictions: restrictionLabels });
     setFase('PASSO_1');
@@ -191,8 +191,8 @@ export default function SimplexSimulator() {
               <h4 className="font-bold text-yellow-800">Passo Atual:</h4>
               <p className="text-sm text-yellow-900 font-medium">
                 {fase === 'PASSO_1' && "1. Analisando a linha de Z para encontrar a variável que entra na base (Coluna com o menor valor negativo)."}
-                {fase === 'PASSO_2' && "2 & 3. Coluna pivô identificada! Calculando as razões (b / Coeficiente da Coluna) para definir quem sai."}
-                {fase === 'PASSO_3' && "4 & 5. Linha e Elemento Pivô determinados (Menor razão positiva estrita)."}
+                {fase === 'PASSO_2' && "2 e 3. Coluna pivô identificada! Calculando as razões (b / Coeficiente da Coluna) para definir quem sai."}
+                {fase === 'PASSO_3' && "4 e 5. Linha e Elemento Pivô determinados (Menor razão positiva estrita)."}
                 {fase === 'PASSO_4' && "6. Realizando operações de linha (pivotamento) para zerar o restante da coluna."}
                 {fase === 'OTIMO' && "Solução Ótima Encontrada! Não há valores negativos na linha Z."}
               </p>
